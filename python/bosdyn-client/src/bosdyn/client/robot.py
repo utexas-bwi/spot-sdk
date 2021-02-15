@@ -99,11 +99,13 @@ class Robot(object):
 
     def __init__(
             self,
-            name=None
+            name=None,
+            sim=None
     ):
         self._name = name
         self.client_name = None
         self.address = None
+        self.sim = sim
         self.serial_number = None
         self.logger = logging.getLogger(self._name or 'bosdyn.Robot')
         self.user_token = None
@@ -303,7 +305,7 @@ class Robot(object):
             should_send_app_token = self._should_send_app_token_on_each_request()
 
         # Channel doesn't exist, so create it.
-        port = _DEFAULT_SECURE_CHANNEL_PORT
+        port = 50051 if self.sim else _DEFAULT_SECURE_CHANNEL_PORT
         creds = bosdyn.client.channel.create_secure_channel_creds(
             self.cert, lambda: (self.app_token, self.user_token), should_send_app_token)
         channel = bosdyn.client.channel.create_secure_channel(self.address, port, creds, authority,

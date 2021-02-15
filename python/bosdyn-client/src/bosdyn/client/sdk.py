@@ -164,6 +164,7 @@ class Sdk(object):
 
     def __init__(self, name=None):
         self.cert = None
+        self.sim = None
         self.client_name = name
         self.logger = logging.getLogger(name or 'bosdyn.Sdk')
         self.request_processors = []
@@ -195,11 +196,14 @@ class Sdk(object):
             A Robot initialized with the current Sdk settings.
         """
 
-
+        self.sim = address == '127.0.0.1' 
+        
+        
         if address in self.robots:
             return self.robots[address]
         robot = Robot(
-            name=name or address
+            name=name or address,
+            sim=self.sim
         )
         robot.address = address
 
@@ -255,7 +259,8 @@ class Sdk(object):
         """
         self.cert = None
         if resource_path_glob is None:
-            self.cert = pkg_resources.resource_stream('bosdyn.client.resources', 'robot.pem').read()
+            cert_name = 'robot.pem' if self.sim else 'ca.pem'
+            self.cert = pkg_resources.resource_stream('bosdyn.client.resources', cert_name).read()
         else:
             cert_paths = [c for c in glob.glob(resource_path_glob) if os.path.isfile(c)]
             if not cert_paths:
